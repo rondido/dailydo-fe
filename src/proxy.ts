@@ -1,0 +1,56 @@
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+import { COOKIES } from '@/shared/config/cookies';
+import { ROUTES } from '@/shared/config/routes';
+
+const ACCESS_TOKEN_COOKIE = COOKIES.ACCESS_TOKEN;
+
+const HOME_ROUTE = ROUTES.HOME;
+
+const PROTECTED_ROUTES = [
+  ROUTES.MISSIONS,
+  ROUTES.MYPAGE,
+  ROUTES.MYLOG,
+  ROUTES.COLLECTIONS,
+];
+const AUTH_ROUTES = [ROUTES.LOGIN, ROUTES.SIGNUP];
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const hasAccessToken = request.cookies.has(ACCESS_TOKEN_COOKIE);
+
+  const isHomeRoute = pathname === HOME_ROUTE;
+
+  const isProtectedRoute = PROTECTED_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+  const isAuthRoute = AUTH_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+
+  if (
+    (isHomeRoute && !hasAccessToken) ||
+    (isProtectedRoute && !hasAccessToken)
+  ) {
+    return NextResponse.redirect(new URL(ROUTES.LOGIN, request.url));
+  }
+
+  if ((isHomeRoute && hasAccessToken) || (isAuthRoute && hasAccessToken)) {
+    return NextResponse.redirect(new URL(ROUTES.MISSIONS, request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    '/:path*',
+    '/missions/:path*',
+    '/mypage/:path*',
+    '/mylogs/:path*',
+    '/collections/:path*',
+    '/login',
+    '/signup',
+  ],
+};
