@@ -1,7 +1,18 @@
+'use client';
+
 import { ReactNode } from 'react';
 
-import { MSWProvider } from './msw-provider';
+import { ToastProvider } from '@/shared/ui/toast';
 
-export default function Providers({ children }: { children: ReactNode }) {
-  return <MSWProvider>{children}</MSWProvider>;
-}
+import { MSWProvider } from './msw-provider';
+import { ReactQueryProvider } from './react-query-provider';
+
+export const Providers = ({ children }: { children: ReactNode }) => {
+  return (
+    <MSWProvider>
+      <ReactQueryProvider>
+        <ToastProvider>{children}</ToastProvider>
+      </ReactQueryProvider>
+    </MSWProvider>
+  );
+};

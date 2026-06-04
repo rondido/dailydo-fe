@@ -1,3 +1,5 @@
+import storybook from 'eslint-plugin-storybook';
+
 import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
@@ -9,11 +11,7 @@ const eslintConfig = defineConfig([
   globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
   {
     files: ['**/*.{ts,tsx}'],
-    languageOptions: {
-      parserOptions: {
-        project: true,
-      },
-    },
+    ignores: ['.storybook/**'],
     plugins: {
       'simple-import-sort': simpleImportSort,
     },
@@ -22,6 +20,7 @@ const eslintConfig = defineConfig([
       'simple-import-sort/exports': 'error',
     },
   },
+  ...storybook.configs['flat/recommended'],
 ]);
 
 export default eslintConfig;

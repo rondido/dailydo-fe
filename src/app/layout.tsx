@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 
 import { initMocks } from '@/mocks';
-import Providers from '@/providers';
+import { Providers } from '@/providers';
 
 export const metadata: Metadata = {
   title: 'Daily:DO',
@@ -25,11 +25,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className={`${pretendard.variable} h-full antialiased`}>
       <body className="h-full">
-        <Providers>
-          <div className="mx-auto flex h-full max-w-107.5 min-w-90 flex-col">
-            <main>{children}</main>
-          </div>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

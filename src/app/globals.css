@@ -1,14 +1,295 @@
 @import 'tailwindcss';
 
-body {
-  font-family: var(--font-pretendard), sans-serif;
-}
-
 @layer base {
+  body {
+    font-family: var(--font-pretendard), sans-serif;
+    @apply bg-white text-black;
+  }
+
   button {
     cursor: pointer;
   }
+
   button:disabled {
     cursor: default;
   }
+}
+
+@theme {
+  /* 타이포 */
+  --font-sans: var(--font-pretendard), sans-serif;
+  --font-size-xl: 1.25rem;
+  --line-height-xl: 1.875rem;
+  --font-size-display-md: 2.5rem;
+  --line-height-display-md: 3.5rem;
+  --font-size-display-lg: 3rem;
+  --line-height-display-lg: 3.75rem;
+  --font-size-display-xl: 3.5rem;
+  --line-height-display-xl: 4.25rem;
+
+  /* 색상 */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-gray-50: #f6f7f9;
+  --color-gray-100: #edeff1;
+  --color-gray-200: #dddddd;
+  --color-gray-300: #cccccc;
+  --color-gray-400: #bbbbbb;
+  --color-gray-500: #a4a4a4;
+  --color-gray-600: #737373;
+  --color-gray-700: #4a4a4a;
+  --color-gray-800: #333333;
+  --color-gray-900: #191919;
+
+  --color-green-100: #edfff5;
+  --color-green-200: #dffaeb;
+  --color-green-300: #c5f1d9;
+  --color-green-400: #afefd1;
+  --color-green-500: #00bb86;
+  --color-green-600: #009973;
+  --color-green-700: #0c7665;
+
+  --color-blue-100: #d6f9ff;
+  --color-blue-500: #2099fd;
+  --color-blue-600: #337aff;
+
+  --color-gradient-100-start: #e9fbf1;
+  --color-gradient-100-end: #e9fcfc;
+  --color-gradient-200-start: #def8ea;
+  --color-gradient-200-end: #d9f6f4;
+  --color-gradient-500-start: #17da71;
+  --color-gradient-500-end: #08ddf0;
+  --color-gradient-600-start: #00d361;
+  --color-gradient-600-end: #00b9de;
+
+  --color-gradient-yellow: #fecd47;
+
+  --color-special-gradient-yellow-start: #d38600;
+  --color-special-gradient-yellow-end: #fdeb49;
+
+  --color-special-gradient-start: #e5b01e;
+  --color-special-gradient-end: #fdeb49;
+
+  --color-error: #e91616;
+  --color-skeleton: #f2f5f9;
+  --color-special-text-color: rgba(213, 138, 0, 1);
+  --color-special: #f1eac5;
+
+  --color-special-border: #ecc12a;
+  --color-special-text: #ffbb00;
+
+  --color-timer-text: #337aff;
+  --color-bg-timer: rgba(24, 220, 255, 0.2);
+  /* 그림자 */
+  --shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 16px 16px 0 rgba(0, 0, 0, 0.12);
+
+  /* 애니메이션 */
+  --animate-float: float 4s linear infinite alternate;
+  --animate-float-slow: float 6s linear infinite 0.7s alternate;
+  --animate-orbit-circle: orbit-circle 4s linear infinite;
+  --animate-orbit-circle-reverse: orbit-circle 4s linear infinite reverse;
+}
+
+@utility bg-gradient-100 {
+  background: linear-gradient(
+    var(--gradient-dir, to top),
+    var(--color-gradient-100-start),
+    var(--color-gradient-100-end)
+  );
+}
+
+@utility bg-gradient-200 {
+  background: linear-gradient(
+    var(--gradient-dir, to top),
+    var(--color-gradient-200-start),
+    var(--color-gradient-200-end)
+  );
+}
+
+@utility bg-gradient-500 {
+  background: linear-gradient(
+    var(--gradient-dir, to top),
+    var(--color-gradient-500-start),
+    var(--color-gradient-500-end)
+  );
+}
+
+@utility bg-gradient-600 {
+  background: linear-gradient(
+    var(--gradient-dir, to top),
+    var(--color-gradient-600-start),
+    var(--color-gradient-600-end)
+  );
+}
+
+@keyframes slide-up-fade-in {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@utility animate-slide-up {
+  animation: slide-up-fade-in 0.4s ease-out forwards;
+}
+
+@keyframes slide-up-fade-in {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@utility animate-slide-up {
+  animation: slide-up-fade-in 0.4s ease-out forwards;
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(0%) skewX(-20deg);
+  }
+
+  to {
+    transform: translateX(200%) skewX(-20deg);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+
+  25% {
+    transform: translateY(-10px) rotate(-12deg) scale(1.1);
+  }
+
+  50% {
+    transform: translateY(-18px) rotate(12deg) scale(1.2);
+  }
+
+  75% {
+    transform: translateY(-8px) rotate(8deg) scale(1.1);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes orbit-circle {
+  0% {
+    transform: rotate(0deg) translateX(50px) rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: rotate(180deg) translateX(50px) rotate(-180deg) scale(1.5);
+  }
+
+  100% {
+    transform: rotate(360deg) translateX(50px) rotate(-360deg) scale(1);
+  }
+}
+
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility animate-shimmer {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -100%;
+    width: 100%;
+    height: 200%;
+    background: linear-gradient(
+      0deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    opacity: 0.6;
+    animation: shimmer 1s infinite linear;
+  }
+}
+
+@utility bg-basic-mission-card-pattern {
+  background: linear-gradient(
+    to top,
+    var(--color-gradient-500-start),
+    var(--color-gradient-500-end)
+  );
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -40%;
+    background-image: url('/mission/icons/card_back.svg');
+    background-size: 55px;
+    background-repeat: repeat;
+    transform: rotate(20deg);
+    pointer-events: none;
+  }
+}
+
+@utility bg-complete-card-pattern {
+  background: linear-gradient(
+    to top,
+    var(--color-green-500),
+    var(--color-green-400)
+  );
+}
+
+@utility bg-special-mission-card-pattern {
+  background: linear-gradient(
+    to top,
+    var(--color-special-gradient-start),
+    var(--color-special-gradient-end)
+  );
+  border: 3px solid var(--color-special-border);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -40%;
+    background-image: url('/mission/icons/card_back.svg');
+    background-size: 55px;
+    background-repeat: repeat;
+    transform: rotate(20deg);
+    pointer-events: none;
+  }
+}
+
+@utility bg-complete-card-pattern {
+  background: linear-gradient(
+    to top,
+    var(--color-gradient-500-start),
+    var(--color-gradient-500-end)
+  );
+}
+
+@utility bg-special-complete-card-pattern {
+  background: linear-gradient(
+    to top,
+    var(--color-special-gradient-start),
+    var(--color-special-gradient-end)
+  );
 }
