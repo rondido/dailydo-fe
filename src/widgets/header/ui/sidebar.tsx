@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { Drawer } from 'vaul';
 
-import { COOKIES } from '@/shared/config/cookies';
+import { useAuth, useLogout } from '@/features/auth';
 import { ROUTES, ROUTES_NAME } from '@/shared/config/routes';
 import ChevronLight from '@/shared/ui/icons/common/chevron_right.svg';
 import Delete from '@/shared/ui/icons/common/delete.svg';
@@ -54,11 +54,17 @@ interface SidebarProps {
 
 export const Sidebar = ({ variant }: SidebarProps) => {
   const [open, setOpen] = useState(false);
+  const portalContainer =
+    typeof window !== 'undefined'
+      ? document.getElementById('mobile-portal-root')
+      : null;
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
+  const { mutate: logout } = useLogout();
 
-  const isLoggedIn = true;
+  const { data: session } = useAuth();
+  const isLoggedIn = !!session;
 
   const handleClickLink = (route: string) => {
     if (isLoggedIn) {
@@ -72,13 +78,6 @@ export const Sidebar = ({ variant }: SidebarProps) => {
     });
   };
 
-  const handleLogout = () => {
-    document.cookie = `${COOKIES.ACCESS_TOKEN}=; Path=/; Max-Age=0`;
-    document.cookie = `${COOKIES.REFRESH_TOKEN}=; Path=/; Max-Age=0`;
-    router.push(ROUTES.HOME);
-    setOpen(false);
-  };
-
   return (
     <Drawer.Root direction="right" open={open} onOpenChange={setOpen}>
       <Drawer.Trigger aria-label="메뉴 열기" className="ml-auto">
@@ -89,13 +88,7 @@ export const Sidebar = ({ variant }: SidebarProps) => {
           )}
         />
       </Drawer.Trigger>
-      <Drawer.Portal
-        container={
-          typeof window !== 'undefined'
-            ? document.getElementById('mobile-portal-root')
-            : undefined
-        }
-      >
+      <Drawer.Portal container={portalContainer ?? undefined}>
         <Drawer.Overlay className="pointer-events-auto absolute inset-0 bg-black/20" />
         <Drawer.Content className="pointer-events-auto absolute inset-y-0 right-0 flex w-78.5 flex-col rounded-tl-3xl bg-white shadow outline-none">
           <Drawer.Title className="sr-only">메뉴</Drawer.Title>
@@ -119,7 +112,10 @@ export const Sidebar = ({ variant }: SidebarProps) => {
                 />
                 <SidebarNavItem
                   name={ROUTES_NAME.MYLOG}
-                  isActive={pathname === ROUTES.MYLOG}
+                  isActive={
+                    pathname === ROUTES.MYLOG ||
+                    pathname.startsWith(ROUTES.MYLOG + '/')
+                  }
                   onClick={() => handleClickLink(ROUTES.MYLOG)}
                   showLock={!isLoggedIn}
                 />
@@ -130,12 +126,12 @@ export const Sidebar = ({ variant }: SidebarProps) => {
                   showLock={!isLoggedIn}
                 />
                 {/* TODO: 컬렉션 페이지 구현 후 활성화 */}
-                {/* <SidebarNavItem
+                <SidebarNavItem
                   name={ROUTES_NAME.COLLECTIONS}
                   isActive={pathname === ROUTES.COLLECTIONS}
                   onClick={() => handleClickLink(ROUTES.COLLECTIONS)}
                   showLock={!isLoggedIn}
-                /> */}
+                />
 
                 {/* 로그인, 로그아웃 버튼 */}
                 <li className="mt-auto ml-auto">
@@ -145,7 +141,7 @@ export const Sidebar = ({ variant }: SidebarProps) => {
                     </Link>
                   ) : (
                     <button
-                      onClick={handleLogout}
+                      onClick={() => logout()}
                       type="button"
                       className="p-4"
                     >

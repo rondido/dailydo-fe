@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
 
-import {
-  useGetMyMissions,
-  useGetTodayMissions,
-} from '@/entities/missions/api/mission.queries';
+import { useAuth, useLogout } from '@/features/auth';
 import { ROUTES, ROUTES_NAME } from '@/shared/config/routes';
 import Logo from '@/shared/ui/icons/common/logo.svg';
 import { useToast } from '@/shared/ui/toast';
 import { cn } from '@/shared/utils/cn';
+
+import { MissionBadge } from './mission-badge';
 
 interface PcNavItemProps {
   name: string;
@@ -34,19 +34,10 @@ const PcNavItem = ({ name, onClick, badge }: PcNavItemProps) => (
 export const PcHeader = ({ className }: { className?: string }) => {
   const router = useRouter();
   const { toast } = useToast();
+  const { mutate: logout } = useLogout();
 
-  const isLoggedIn = true;
-
-  const { data: todayMissions, isPending: isTodayMissionsPending } =
-    useGetTodayMissions();
-  const { data: myMissions, isPending: isMyMissionsPending } =
-    useGetMyMissions();
-
-  // 미션에 배지에 표시할 값
-  const missionStatus =
-    todayMissions?.status === 'ARRIVED'
-      ? 'N'
-      : myMissions?.items.filter((item) => !item.completed).length;
+  const { data: session } = useAuth();
+  const isLoggedIn = !!session;
 
   const handleClickLink = (route: string) => {
     if (isLoggedIn) {
@@ -57,10 +48,6 @@ export const PcHeader = ({ className }: { className?: string }) => {
       type: 'warning',
       message: '해당 기능은 로그인 사용자만 이용 가능해요',
     });
-  };
-
-  const handleLogout = () => {
-    // TODO: 로그아웃 구현
   };
 
   return (
@@ -82,11 +69,9 @@ export const PcHeader = ({ className }: { className?: string }) => {
               name={ROUTES_NAME.MISSIONS}
               onClick={() => handleClickLink(ROUTES.MISSIONS)}
               badge={
-                !isTodayMissionsPending && !isMyMissionsPending ? (
-                  <span className="h-4 rounded-full bg-green-500 px-1.75 text-xs font-semibold text-white">
-                    {missionStatus}
-                  </span>
-                ) : undefined
+                <Suspense fallback={null}>
+                  <MissionBadge />
+                </Suspense>
               }
             />
             <PcNavItem
@@ -97,11 +82,10 @@ export const PcHeader = ({ className }: { className?: string }) => {
               name={ROUTES_NAME.MYPAGE}
               onClick={() => handleClickLink(ROUTES.MYPAGE)}
             />
-            {/* TODO: 컬렉션 페이지 구현 후 활성화 */}
-            {/* <PcNavItem
+            <PcNavItem
               name={ROUTES_NAME.COLLECTIONS}
               onClick={() => handleClickLink(ROUTES.COLLECTIONS)}
-            /> */}
+            />
             {/* 로그인, 로그아웃 버튼 */}
             <li className="mt-auto ml-auto">
               {!isLoggedIn ? (
@@ -109,7 +93,7 @@ export const PcHeader = ({ className }: { className?: string }) => {
                   {ROUTES_NAME.LOGIN}
                 </Link>
               ) : (
-                <button onClick={handleLogout} type="button" className="p-4">
+                <button onClick={() => logout()} type="button" className="p-4">
                   로그아웃
                 </button>
               )}

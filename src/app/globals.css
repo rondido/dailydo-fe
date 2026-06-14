@@ -16,6 +16,11 @@
 }
 
 @theme {
+  /* 레이아웃 */
+  --min-content-width: 360px;
+  --max-content-width: 430px;
+  --min-content-height: 664px;
+
   /* 타이포 */
   --font-sans: var(--font-pretendard), sans-serif;
   --font-size-xl: 1.25rem;
@@ -58,6 +63,7 @@
   --color-gradient-100-end: #e9fcfc;
   --color-gradient-200-start: #def8ea;
   --color-gradient-200-end: #d9f6f4;
+
   --color-gradient-500-start: #17da71;
   --color-gradient-500-end: #08ddf0;
   --color-gradient-600-start: #00d361;
@@ -90,6 +96,14 @@
   --animate-float-slow: float 6s linear infinite 0.7s alternate;
   --animate-orbit-circle: orbit-circle 4s linear infinite;
   --animate-orbit-circle-reverse: orbit-circle 4s linear infinite reverse;
+}
+
+@utility content-container {
+  width: min(max(var(--min-content-width), 100%), var(--max-content-width));
+  height: 100%;
+  min-height: var(--min-content-height);
+  margin-inline: auto;
+  mask-origin: content-box;
 }
 
 @utility bg-gradient-100 {
@@ -204,6 +218,7 @@
 
 @utility scrollbar-hide {
   scrollbar-width: none;
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -290,7 +305,11 @@
   border-color: transparent;
   background-image:
     linear-gradient(white, white),
-    linear-gradient(to right, var(--color-gradient-600-start), var(--color-gradient-600-end));
+    linear-gradient(
+      to right,
+      var(--color-gradient-600-start),
+      var(--color-gradient-600-end)
+    );
   background-clip: padding-box, border-box;
   background-origin: border-box;
 }
@@ -299,7 +318,11 @@
   border-color: transparent;
   background-image:
     linear-gradient(white, white),
-    linear-gradient(to top, var(--color-special-gradient-start), var(--color-special-gradient-end));
+    linear-gradient(
+      to top,
+      var(--color-special-gradient-start),
+      var(--color-special-gradient-end)
+    );
   background-clip: padding-box, border-box;
   background-origin: border-box;
 }

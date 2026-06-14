@@ -3,30 +3,13 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
-import { type Category } from '@/entities/category';
+import type { User } from '@/entities/user';
 import ChevronRight from '@/shared/ui/icons/mypage/chevron_right.svg';
 import { Skeleton, TextSkeleton } from '@/shared/ui/skeleton';
 
 import { sectionLabelClass } from './mypage.styles';
 
 const SKELETON_COUNT = 4;
-
-const myCategories: Category[] = [
-  { id: 1, name: '스터디/성장', image: '/images/category/category_study.png' },
-  { id: 2, name: '취미/창작', image: '/images/category/category_hobby.png' },
-  {
-    id: 3,
-    name: '도전/탐험',
-    image: '/images/category/category_challenge.png',
-  },
-  { id: 4, name: '스터디/성장', image: '/images/category/category_study.png' },
-  { id: 5, name: '취미/창작', image: '/images/category/category_hobby.png' },
-  {
-    id: 6,
-    name: '도전/탐험',
-    image: '/images/category/category_challenge.png',
-  },
-];
 
 const CategoryItemSkeleton = () => (
   <li className="flex w-22 shrink-0 flex-col items-center gap-1 rounded-2xl bg-white py-2 text-sm font-semibold">
@@ -63,6 +46,7 @@ const CategoryItem = ({ src, label }: { src: string; label: string }) => {
         <Image
           src={src}
           fill
+          sizes="40px"
           alt=""
           className={`object-cover ${isImageLoading ? 'invisible' : 'visible'}`}
           onLoad={() => setIsImageLoading(false)}
@@ -73,9 +57,11 @@ const CategoryItem = ({ src, label }: { src: string; label: string }) => {
   );
 };
 
-export const CategorySection = () => (
-  // TODO: 카테고리 데이터 호출
+interface CategorySectionProps {
+  categories: User['categories'];
+}
 
+export const CategorySection = ({ categories }: CategorySectionProps) => (
   <section className="flex flex-col gap-2">
     <h4>
       <button
@@ -87,7 +73,7 @@ export const CategorySection = () => (
       </button>
     </h4>
     <ul className="scrollbar-hide flex gap-2 overflow-x-auto">
-      {myCategories.map((category) => (
+      {categories.data.map((category) => (
         <CategoryItem
           key={category.id}
           src={category.image}

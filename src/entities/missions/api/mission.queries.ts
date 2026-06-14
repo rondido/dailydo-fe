@@ -17,6 +17,8 @@ export const useGetTodayMissions = () =>
   useSuspenseQuery({
     queryKey: missionQueryKeys.todayMissions,
     queryFn: getTodayMissions,
+    gcTime: 0,
+    staleTime: 1000 * 60 * 5,
   });
 
 export const useGetMyMissions = () =>
@@ -30,13 +32,14 @@ export const usePostTodayMissions = (options?: { onSuccess?: () => void }) => {
   return useMutation({
     mutationFn: (missionId: number[]) => postTodayMissions(missionId),
     onSuccess: async () => {
+      queryClient.setQueryData(
+        missionQueryKeys.todayMissions,
+        (prev: Mission | undefined) =>
+          prev ? { ...prev, status: 'CONFIRMED' as const } : prev,
+      );
       await queryClient.invalidateQueries({
         queryKey: missionQueryKeys.myMissions,
       });
-      queryClient.setQueryData(
-        missionQueryKeys.todayMissions,
-        (prev: Mission) => ({ ...prev, status: 'CONFIRMED' as const }),
-      );
       options?.onSuccess?.();
     },
   });

@@ -36,7 +36,6 @@ const MyMissionBackContent = ({
   open,
   setIsOpen,
 }: MyMissionBackContentProps) => {
-  console.log(mission);
   return (
     <>
       <span
@@ -67,7 +66,7 @@ const MyMissionBackContent = ({
         height={147}
         className={cn(
           'rounded-full object-cover transition-all duration-500 ease-out',
-          isCompleted ? 'h-[147px] w-[147px]' : 'h-20 w-20',
+          isCompleted ? 'h-36.75 w-36.75' : 'h-20 w-20',
         )}
       />
       {isCompleted && (
@@ -107,18 +106,16 @@ export const MyLogBottomSheet = ({
   return (
     <>
       <BottomSheet.Root open={open} onOpenChange={setOpen}>
-        <BottomSheet.Content>
-          <BottomSheet.Header>
+        <BottomSheet.Content onPointerDownOutside={(e) => e.preventDefault()}>
+          <BottomSheet.Header className="pt-6">
             <BottomSheet.Title>마이로그 작성</BottomSheet.Title>
           </BottomSheet.Header>
-          <BottomSheet.Body>
-            <span className="mt-8 mb-1 text-sm font-medium">
+          <BottomSheet.Body className="flex flex-col pt-4 pb-8">
+            <span className="mb-1 text-sm font-medium">
               기억하고 싶은 순간이 있나요?
             </span>
-            <div className="mb-12">
+            <div className="flex flex-col gap-12">
               <FileInput />
-            </div>
-            <div className="pb-8">
               <Textarea
                 id="mylog"
                 label="오늘을 한줄로 남겨 볼까요?"
@@ -127,10 +124,10 @@ export const MyLogBottomSheet = ({
               />
             </div>
           </BottomSheet.Body>
-          <BottomSheet.Footer>
+          <BottomSheet.Footer className="pt-0 pb-8">
             <div className="flex gap-2">
               <BottomSheet.Close>
-                <Button variant="secondary">건너뛰기</Button>
+                <Button variant="tertiary">건너뛰기</Button>
               </BottomSheet.Close>
               <Button variant="primary" onClick={handleAlertOpenConfirm}>
                 완료하기
@@ -239,7 +236,7 @@ export const MyMissionList = () => {
           slidesPerView="auto"
           centeredSlides
           spaceBetween={24}
-          loop
+          loop={false}
           grabCursor
           watchSlidesProgress
           style={{ overflow: 'visible' }}
@@ -253,7 +250,7 @@ export const MyMissionList = () => {
           onSlideChangeTransitionEnd={handleSlideChangeEnd}
         >
           {missions.map((mission) => (
-            <SwiperSlide key={mission.missionId} className="!w-[225px]">
+            <SwiperSlide key={mission.missionId} className="w-56.25!">
               <div data-card-wrapper>
                 <MyMissionCard mission={mission} />
               </div>
@@ -261,7 +258,6 @@ export const MyMissionList = () => {
           ))}
         </Swiper>
       </div>
-      {/* <div className="mt-auto w-full shrink-0 px-8 pb-9.5"></div> */}
     </>
   );
 };

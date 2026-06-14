@@ -40,6 +40,14 @@ export const TodayMissionListPage = ({
 
 export const MissionPage = () => {
   const { data } = useGetTodayMissions();
+
+  if (!data.status)
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Loader size="lg" color="primary" />
+      </div>
+    );
+
   return data.status === 'CONFIRMED' ? (
     <MyMissionListPage />
   ) : (

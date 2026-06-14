@@ -81,7 +81,7 @@ export const handlers = [
   // 오늘의 미션 목록 조회
   http.get(`${BASE_URL}/api/missions/new`, () => {
     return HttpResponse.json({
-      status: 'ARRIVED',
+      status: confirmedMissionIds.length > 0 ? 'CONFIRMED' : 'ARRIVED',
       isGuest: false,
       missionDate: new Date().toISOString().split('T')[0],
       minSelectableCount: 1,
@@ -92,8 +92,8 @@ export const handlers = [
 
   // 오늘의 미션 선택 확정
   http.post(`${BASE_URL}/api/missions/new`, async ({ request }) => {
-    const body = (await request.json()) as { missionId: number[] };
-    confirmedMissionIds = body.missionId ?? [];
+    const body = (await request.json()) as { missionIds: number[] };
+    confirmedMissionIds = body.missionIds ?? [];
     return HttpResponse.json(null, { status: 204 });
   }),
 
