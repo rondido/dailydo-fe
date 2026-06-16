@@ -5,44 +5,38 @@ import { useRef, useState } from 'react';
 import type { Swiper as SwiperClass } from 'swiper';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-import { useGetMyMissions } from '@/entities/missions/api/mission.queries';
-import { MissionItem, MyLog } from '@/entities/missions/model/mission.types';
-import { AlertBottomSheet } from '@/shared/ui/bottom-sheet';
+import { useFileUpload } from '@/entities/file/api/file.queries';
+import {
+  useGetMyMissions,
+  usePostCompleteMission,
+} from '@/entities/missions/api/mission.queries';
+import { MISSION_TOAST_MESSAGES } from '@/entities/missions/model/mission.constants';
+import { MyMissionItem } from '@/entities/missions/model/mission.types';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { Button } from '@/shared/ui/button/button';
 import { Textarea } from '@/shared/ui/input';
+import { useToast } from '@/shared/ui/toast';
 import { cn } from '@/shared/utils/cn';
 import { Card } from '@/widgets/card';
 import { FileInput } from '@/widgets/file-input';
+import { useFileInput } from '@/widgets/file-input/model/use-file-input';
 
 interface MyMissionBackContentProps {
-  mission: MissionItem;
-  isCompleted: boolean;
+  mission: MyMissionItem;
   onCompleteClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  open: boolean;
-  setIsOpen: (open: boolean) => void;
-  onMyLogForm: {
-    id: number;
-    memo: string;
-    photo: string;
-  };
-  onSetMyLogForm: (value: MyLog) => void;
 }
 
 const MyMissionBackContent = ({
   mission,
-  isCompleted,
   onCompleteClick,
-  open,
-  setIsOpen,
 }: MyMissionBackContentProps) => {
   return (
     <>
       <span
         className={cn(
           'rounded-2xl px-2 py-1 text-xs font-normal',
-          isCompleted ? 'bg-white' : 'bg-gray-100',
-          isCompleted
+          mission?.completed ? 'bg-white' : 'bg-gray-100',
+          mission?.completed
             ? mission.isSpecial
               ? 'text-special-text-color'
               : 'text-green-600'
@@ -53,29 +47,28 @@ const MyMissionBackContent = ({
       </span>
       <p
         className={cn(
-          'text-center text-xl font-semibold',
-          isCompleted ? 'text-white' : 'text-gray-800',
+          'text-center text-xl font-semibold break-keep',
+          mission?.completed ? 'text-white' : 'text-gray-800',
         )}
       >
         {mission.title}
       </p>
       <Image
-        src={mission.image || '/mocks/images/test_image.png'}
+        src={mission?.mylog?.photo || '/mocks/images/test_image.png'}
         alt={mission.title}
         width={147}
         height={147}
         className={cn(
-          'rounded-full object-cover transition-all duration-500 ease-out',
-          isCompleted ? 'h-36.75 w-36.75' : 'h-20 w-20',
+          'rounded-lg object-cover transition-all duration-500 ease-out',
+          mission?.completed ? 'aspect-4/3 w-36.75' : 'h-20 w-20',
         )}
       />
-      {isCompleted && (
-        <span className="animate-slide-up text-xs font-normal text-white">
-          조각구름이 흩어지기 전에 순간포착!
+      {mission?.completed && (
+        <span className="animate-slide-up w-full overflow-hidden text-center text-xs font-normal text-ellipsis whitespace-nowrap text-white">
+          {mission?.mylog?.memo}
         </span>
       )}
-
-      {!isCompleted && (
+      {!mission?.completed && (
         <Button
           variant="primary"
           size="md"
@@ -85,24 +78,45 @@ const MyMissionBackContent = ({
           완료하기
         </Button>
       )}
-      {open && <MyLogBottomSheet open={open} setOpen={setIsOpen} />}
     </>
   );
 };
 
+interface MyLogBottomSheetProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  onSubmit: (photo: string, memo: string) => void;
+  onSkip: () => void;
+  isPending?: boolean;
+}
+
 export const MyLogBottomSheet = ({
   open,
   setOpen,
-}: {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}) => {
-  const [alertOpen, setAlertOpen] = useState(false);
+  onSubmit,
+  onSkip,
+  isPending = false,
+}: MyLogBottomSheetProps) => {
+  const { file, handleChange } = useFileInput();
+  const [memo, setMemo] = useState('');
+  const { mutateAsync: upload, isPending: isUploading } = useFileUpload();
+  const { toast } = useToast();
 
-  const handleAlertOpenConfirm = () => {
-    setOpen(false);
-    setAlertOpen(true);
+  const handleSubmit = async () => {
+    try {
+      const photo = file ? await upload(file) : '';
+      onSubmit(photo, memo);
+    } catch (error) {
+      toast({
+        message: `${MISSION_TOAST_MESSAGES.uploadError}`,
+        type: 'error',
+      });
+      console.error(error);
+    }
   };
+
+  const isLoading = isUploading || isPending;
+
   return (
     <>
       <BottomSheet.Root open={open} onOpenChange={setOpen}>
@@ -115,76 +129,112 @@ export const MyLogBottomSheet = ({
               기억하고 싶은 순간이 있나요?
             </span>
             <div className="flex flex-col gap-12">
-              <FileInput />
+              <FileInput onChange={handleChange} />
               <Textarea
                 id="mylog"
                 label="오늘을 한줄로 남겨 볼까요?"
                 placeholder="최대 100자까지 입력 가능해요."
-                description="0/100자"
+                description={`${memo.length}/100자`}
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                maxLength={100}
               />
             </div>
           </BottomSheet.Body>
           <BottomSheet.Footer className="pt-0 pb-8">
             <div className="flex gap-2">
               <BottomSheet.Close>
-                <Button variant="tertiary">건너뛰기</Button>
+                <Button
+                  variant="tertiary"
+                  onClick={onSkip}
+                  isLoading={isPending}
+                  type="button"
+                >
+                  건너뛰기
+                </Button>
               </BottomSheet.Close>
-              <Button variant="primary" onClick={handleAlertOpenConfirm}>
+              <Button
+                variant="primary"
+                onClick={handleSubmit}
+                isLoading={isLoading}
+                type="button"
+              >
                 완료하기
               </Button>
             </div>
           </BottomSheet.Footer>
         </BottomSheet.Content>
       </BottomSheet.Root>
-      <AlertBottomSheet
-        open={alertOpen}
-        onOpenChange={setAlertOpen}
-        title="정말 취소하시겠어요?"
-        description="완료를 취소하면 연결된 로그도 같이 삭제돼요."
-        confirmLabel="네"
-        cancelLabel="아니오"
-        onConfirm={() => {
-          setOpen(false);
-          setAlertOpen(false);
-        }}
-      />
     </>
   );
 };
 
-export const MyMissionCard = ({ mission }: { mission: MissionItem }) => {
-  const [isCompleted] = useState(false);
+export const MyMissionCard = ({ mission }: { mission: MyMissionItem }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [myLogForm, setMyLogForm] = useState<MyLog>({
-    id: 0,
-    photo: '',
-    memo: '',
+  const { toast } = useToast();
+  const { mutate, isPending } = usePostCompleteMission({
+    onError: (message) => {
+      toast({ type: 'error', message });
+      setIsOpen(true);
+    },
   });
-  // const { mutate: postMyMissions, isPending } = usePostCompleteMission();
+
   const handleCompleteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     setIsOpen(true);
+  };
+
+  const handleSubmit = (photo: string, memo: string) => {
+    mutate(
+      { itemId: mission.itemId, mylog: { photo, memo } },
+      {
+        onSuccess: () => {
+          toast({
+            message: `${MISSION_TOAST_MESSAGES.completeSuccess}`,
+            type: 'success',
+          });
+          setIsOpen(false);
+        },
+      },
+    );
+  };
+
+  const handleSkip = () => {
+    mutate(
+      { itemId: mission.itemId, mylog: { photo: '', memo: '' } },
+      {
+        onSuccess: () => {
+          toast({
+            message: `${MISSION_TOAST_MESSAGES.skipSuccess}`,
+            type: 'success',
+          });
+          setIsOpen(false);
+        },
+      },
+    );
   };
 
   return (
     <>
       <Card
         isSpecial={mission.isSpecial}
-        isCompleted={isCompleted}
         defaultFlipped
+        isCompleted={mission.completed}
       >
         <Card.Back>
           <MyMissionBackContent
             mission={mission}
-            isCompleted={isCompleted}
             onCompleteClick={handleCompleteClick}
-            open={isOpen}
-            setIsOpen={setIsOpen}
-            onMyLogForm={myLogForm}
-            onSetMyLogForm={setMyLogForm}
           />
         </Card.Back>
       </Card>
+      <MyLogBottomSheet
+        open={isOpen}
+        setOpen={setIsOpen}
+        onSubmit={handleSubmit}
+        onSkip={handleSkip}
+        isPending={isPending}
+      />
     </>
   );
 };
@@ -229,6 +279,7 @@ export const MyMissionList = () => {
       if (wrapper) wrapper.style.transition = '';
     });
   };
+
   return (
     <>
       <div className="w-full overflow-x-clip overflow-y-visible">
@@ -250,7 +301,7 @@ export const MyMissionList = () => {
           onSlideChangeTransitionEnd={handleSlideChangeEnd}
         >
           {missions.map((mission) => (
-            <SwiperSlide key={mission.missionId} className="w-56.25!">
+            <SwiperSlide key={mission.itemId} className="w-56.25!">
               <div data-card-wrapper>
                 <MyMissionCard mission={mission} />
               </div>

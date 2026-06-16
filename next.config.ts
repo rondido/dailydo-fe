@@ -3,6 +3,18 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.s3.ap-northeast-2.amazonaws.com',
+      },
+      ...(process.env.NODE_ENV === 'development'
+        ? [{ protocol: 'http' as const, hostname: 'localhost', port: '4000' }]
+        : []),
+    ],
+    dangerouslyAllowLocalIP: true,
+  },
   turbopack: {
     rules: {
       '*.svg': {
@@ -27,8 +39,15 @@ const nextConfig: NextConfig = {
       {
         test: /\.svg$/i,
         issuer: fileLoaderRule?.issuer,
-        resourceQuery: { not: [...(fileLoaderRule?.resourceQuery?.not ?? []), /url/] },
-        use: [{ loader: '@svgr/webpack', options: { svgoConfig: { plugins: ['removeDimensions'] } } }],
+        resourceQuery: {
+          not: [...(fileLoaderRule?.resourceQuery?.not ?? []), /url/],
+        },
+        use: [
+          {
+            loader: '@svgr/webpack',
+            options: { svgoConfig: { plugins: ['removeDimensions'] } },
+          },
+        ],
       },
     );
 

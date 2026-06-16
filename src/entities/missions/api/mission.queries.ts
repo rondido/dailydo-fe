@@ -4,8 +4,13 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query';
 
-import { missionQueryKeys } from '../model/mission.constants';
-import { Mission } from '../model/mission.types';
+import { ApiError } from '@/shared/api/api-error.type';
+
+import {
+  MISSION_TOAST_MESSAGES,
+  missionQueryKeys,
+} from '../model/mission.constants';
+import { Mission, MyLogRequest } from '../model/mission.types';
 import {
   getMyMissions,
   getTodayMissions,
@@ -45,12 +50,24 @@ export const usePostTodayMissions = (options?: { onSuccess?: () => void }) => {
   });
 };
 
-export const usePostCompleteMission = () => {
+export const usePostCompleteMission = (options?: {
+  onError?: (message: string) => void;
+}) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (missionId: number) => postCompleteMission(missionId),
+    mutationFn: ({ itemId, mylog }: { itemId: number; mylog: MyLogRequest }) =>
+      postCompleteMission(itemId, mylog),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: missionQueryKeys.myMissions });
+    },
+    onError: (error, variables) => {
+      const hasMyLog = Boolean(variables.mylog.photo || variables.mylog.memo);
+      if (error instanceof ApiError) {
+        const message = hasMyLog
+          ? `${MISSION_TOAST_MESSAGES.mylogError}`
+          : `${MISSION_TOAST_MESSAGES.completeError}`;
+        options?.onError?.(message);
+      }
     },
   });
 };

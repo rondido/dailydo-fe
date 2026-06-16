@@ -10,13 +10,15 @@ import { ApiError } from '@/shared/api/api-error.type';
 import { ROUTES } from '@/shared/config/routes';
 import { useToast } from '@/shared/ui/toast';
 
+import { parseSocialUser } from '../lib/parse-social-user';
+import { useRegister } from './use-register';
 import { useSocialLogin } from './use-social-login';
 
 export const useSocialLoginCallback = () => {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setLastLogin } = useSessionStore.getState();
+  const setLastLogin = useSessionStore((s) => s.setLastLogin);
 
   const token = searchParams.get('token');
   const rawType = searchParams.get('type');
@@ -29,6 +31,7 @@ export const useSocialLoginCallback = () => {
   const error = searchParams.get('error');
 
   const { mutate: login } = useSocialLogin();
+  const { mutate: register } = useRegister();
 
   useEffect(() => {
     if (error) {
@@ -51,15 +54,40 @@ export const useSocialLoginCallback = () => {
         },
         onError: (err: unknown) => {
           if (err instanceof ApiError && err.code === 404) {
-            sessionStorage.setItem('signup_socialToken', token);
-            sessionStorage.setItem('signup_type', type);
-            if (user) sessionStorage.setItem('signup_user', user);
-            router.replace(ROUTES.SIGNUP);
+            const socialUser = parseSocialUser(user);
+            if (!socialUser) {
+              router.replace(`${ROUTES.LOGIN}?auth_error`);
+              return;
+            }
+            const { email, name, profileImage } = socialUser;
+            register(
+              {
+                email,
+                name,
+                profileImage,
+                type,
+                socialToken: token,
+                agreeMarketing: true,
+              },
+              {
+                onSuccess: () => {
+                  setLastLogin(type);
+                  toast({
+                    message: '데일리두에 오신 것을 환영해요!',
+                    type: 'success',
+                  });
+                  router.replace(ROUTES.MISSIONS);
+                },
+                onError: () => {
+                  router.replace(`${ROUTES.LOGIN}?auth_error`);
+                },
+              },
+            );
             return;
           }
           router.replace(`${ROUTES.LOGIN}?auth_error`);
         },
       },
     );
-  }, [error, login, router, setLastLogin, token, type, user, toast]);
+  }, [error, login, register, router, setLastLogin, token, type, user, toast]);
 };

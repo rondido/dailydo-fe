@@ -37,6 +37,11 @@ export interface MyLog {
   photo: string;
   memo: string;
 }
+
+export interface MyLogRequest {
+  photo: string;
+  memo: string;
+}
 export interface MyMissionComplete {
   itemId: number;
   completed: true;
