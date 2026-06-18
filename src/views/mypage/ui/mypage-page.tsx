@@ -3,6 +3,9 @@
 import { Suspense, useState } from 'react';
 
 import { useGetMe, usePatchMe } from '@/entities/user';
+import { Button } from '@/shared/ui/button';
+import { FallbackUI } from '@/shared/ui/fallback-ui';
+import { useToast } from '@/shared/ui/toast';
 import {
   CategorySection,
   CategorySectionSkeleton,
@@ -14,10 +17,7 @@ import {
   ProfileEditFormValues,
   ProfileSection,
   ProfileSectionSkeleton,
-} from '@/features/mypage';
-import { Button } from '@/shared/ui/button';
-import { FallbackUI } from '@/shared/ui/fallback-ui';
-import { useToast } from '@/shared/ui/toast';
+} from '@/widgets/mypage';
 
 const MypageSkeleton = () => (
   <>
@@ -36,9 +36,16 @@ export const Mypage = () => {
   const { mutate: updateProfile, isPending: isPatchPending } = usePatchMe();
   const { toast } = useToast();
 
-  const handleProfileSubmit = (values: ProfileEditFormValues) => {
+  const handleProfileSubmit = (
+    values: ProfileEditFormValues,
+    profileImageUrl: string | null | undefined,
+  ) => {
     updateProfile(
-      { name: values.name, description: values.description },
+      {
+        name: values.name,
+        description: values.description,
+        ...(profileImageUrl !== undefined && { profileImage: profileImageUrl }),
+      },
       {
         onSuccess: () => {
           toast({ type: 'success', message: '내 정보 수정을 완료했어요.' });

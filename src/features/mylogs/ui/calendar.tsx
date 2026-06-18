@@ -5,15 +5,16 @@ import {
   endOfMonth,
   format,
   getDay,
+  isToday,
   startOfMonth,
 } from 'date-fns';
 import Link from 'next/link';
 
-import type { DailyCount } from '@/features/mylogs/model/mylogs.types';
 import { ROUTES } from '@/shared/config/routes';
 import { cn } from '@/shared/utils/cn';
 
-const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+import { WEEKDAYS } from '../lib/calendar.constants';
+import type { DailyCount } from '../model/mylogs.types';
 
 const COL_START_CLASSES = [
   '',
@@ -58,32 +59,44 @@ export const Calendar = ({ year, month, logs = [] }: CalendarProps) => {
 
   return (
     <div className="w-full">
-      <h2 className="mb-5 text-4xl text-gray-600">
-        <span aria-label={`${year}년 ${month}월`}>{month}</span>
-      </h2>
       <ul className="mb-4 grid grid-cols-7 text-center">
         {WEEKDAYS.map((day) => (
           <li key={day}>
-            <span className="px-1 text-sm font-semibold text-gray-500">
+            <span
+              className={`px-1 text-sm font-semibold ${
+                day === '일'
+                  ? 'text-red-500'
+                  : day === '토'
+                    ? 'text-blue-600'
+                    : 'text-gray-500'
+              }`}
+            >
               {day}
             </span>
           </li>
         ))}
       </ul>
 
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 gap-2">
         {days.map((day, index) => {
           const dateStr = format(day, 'yyyy-MM-dd');
           const count = countByDate[dateStr];
           const baseClassName = cn(
-            'flex aspect-square items-center justify-center text-xl',
+            'flex aspect-square items-center justify-center text-xl rounded-lg hover:brightness-105',
             index === 0 && COL_START_CLASSES[getDay(firstDay) + 1],
           );
 
           // 데이터 없는 날짜는 Link가 아닌 div
-          if (count === undefined) {
+          if (!count) {
             return (
-              <div key={dateStr} className={cn(baseClassName, 'text-gray-600')}>
+              <div
+                key={dateStr}
+                className={cn(
+                  baseClassName,
+                  'text-gray-600',
+                  isToday(day) && 'border-2 border-green-500',
+                )}
+              >
                 {format(day, 'd')}
               </div>
             );
@@ -95,7 +108,11 @@ export const Calendar = ({ year, month, logs = [] }: CalendarProps) => {
               href={`${ROUTES.MYLOG}/${dateStr}`}
               prefetch={false}
               aria-label={`${format(day, 'yyyy년 M월 d일')}, 완료 ${count}개`}
-              className={cn(baseClassName, getCountBgColor(count))}
+              className={cn(
+                baseClassName,
+                !isToday(day) && getCountBgColor(count),
+                isToday(day) && 'border-2 border-green-500',
+              )}
             >
               {format(day, 'd')}
             </Link>

@@ -1,5 +1,7 @@
+import imageCompression from 'browser-image-compression';
+
 import { FileType } from '@/entities/file/model/file.types';
-import { clientApi } from '@/shared/api/fetch-client';
+import { clientApi } from '@/shared/api';
 
 const getPresignedUrl = (mimeType: string) =>
   clientApi.get<FileType>(
@@ -7,11 +9,25 @@ const getPresignedUrl = (mimeType: string) =>
   );
 
 export const uploadFile = async (file: File): Promise<string> => {
-  const { url, path, fields } = await getPresignedUrl(file.type);
+  let compressionFile = file;
+  if (file.size > 2 * 1024 * 1024) {
+    try {
+      compressionFile = await imageCompression(file, {
+        maxSizeMB: 2,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        fileType: 'image/webp',
+      });
+    } catch (error) {
+      console.error('[image compression failed]', error);
+    }
+  }
+
+  const { url, path, fields } = await getPresignedUrl(compressionFile.type);
 
   const formData = new FormData();
   Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
-  formData.append('file', file);
+  formData.append('file', compressionFile);
 
   const res = await fetch(url, { method: 'POST', body: formData });
   if (!res.ok) {
