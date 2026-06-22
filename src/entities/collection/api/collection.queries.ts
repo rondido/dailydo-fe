@@ -8,7 +8,7 @@ import {
   postUserCollection,
 } from './collection.api';
 
-export const useGetCollection = () =>
+export const useGetCollections = () =>
   useQuery({
     queryKey: collectionQueryKeys.collections,
     queryFn: getCollections,
@@ -29,9 +29,14 @@ export const usePostUserCollection = (options?: { onSuccess?: () => void }) => {
   return useMutation({
     mutationFn: (collectionId: string) => postUserCollection(collectionId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: collectionQueryKeys.userCollection,
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: collectionQueryKeys.userCollection,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: collectionQueryKeys.collections,
+        }),
+      ]);
       options?.onSuccess?.();
     },
   });
@@ -41,10 +46,31 @@ export const useDeleteUserCollection = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (collectionId: string) => deleteUserCollection(collectionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onMutate: async () => {
+      await queryClient.cancelQueries({
         queryKey: collectionQueryKeys.userCollection,
       });
+      const previousUserCollection = queryClient.getQueryData(
+        collectionQueryKeys.userCollection,
+      );
+      queryClient.setQueryData(collectionQueryKeys.userCollection, null);
+      return { previousUserCollection };
+    },
+    onError: (_err, _collectionId, context) => {
+      queryClient.setQueryData(
+        collectionQueryKeys.userCollection,
+        context?.previousUserCollection,
+      );
+    },
+    onSettled: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: collectionQueryKeys.userCollection,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: collectionQueryKeys.collections,
+        }),
+      ]);
     },
   });
 };

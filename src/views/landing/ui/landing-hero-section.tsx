@@ -12,11 +12,14 @@ import DecoLight from '@/shared/ui/icons/login/deco_light.svg';
 import DecoLocation from '@/shared/ui/icons/login/deco_location.svg';
 import DecoStar from '@/shared/ui/icons/login/deco_star.svg';
 
+import { MISSION_SECTION_ID } from '../config/constants';
 import { StartButton } from './start-button';
 
 const ScrollChevron = () => {
   const handleClick = () => {
-    document.getElementById('mission')?.scrollIntoView({ behavior: 'smooth' });
+    document
+      .getElementById(MISSION_SECTION_ID)
+      ?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -45,10 +48,10 @@ export const LandingHeroSection = () => {
       <div className="relative z-10 flex flex-col gap-12">
         <div className="flex flex-col gap-6">
           <FadeIn>
-            <h1 className="flex flex-col gap-2 text-3xl font-bold tracking-tight text-black">
+            <h2 className="flex flex-col gap-2 text-3xl font-bold tracking-tight text-black">
               <span>Daily:DO,</span>
               <span>오늘의 나에게 건네는 선물</span>
-            </h1>
+            </h2>
           </FadeIn>
           <FadeIn delay={100}>
             <p className="text-base font-medium tracking-tight text-gray-600">
